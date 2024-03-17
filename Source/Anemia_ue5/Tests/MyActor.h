@@ -7,6 +7,7 @@
 #include "NeuralNetwork.h"
 #include "MyActor.generated.h"
 
+
 UCLASS()
 class ANEMIA_UE5_API AMyActor : public AActor
 {

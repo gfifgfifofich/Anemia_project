@@ -10,6 +10,7 @@
 #include <strstream>
 
 
+
 NeuralNetwork::NeuralNetwork()
 {
 }

@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "FireBall.generated.h"
 
+
 UCLASS()
 class ANEMIA_UE5_API AFireBall : public AActor
 {

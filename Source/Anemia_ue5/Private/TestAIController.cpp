@@ -6,6 +6,7 @@
 #include "../Anemia_ue5GameMode.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
+
 void ATestAIController::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);

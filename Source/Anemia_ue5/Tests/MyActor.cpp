@@ -5,6 +5,7 @@
 #include "Components/PrimitiveComponent.h"
 inline NeuralNetwork* LastBest;
 
+
 // Sets default values
 AMyActor::AMyActor()
 {
