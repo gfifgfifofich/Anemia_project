@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include "TestEnemy.generated.h"
 
-
 UCLASS(Blueprintable)
 class ANEMIA_UE5_API ATestEnemy : public ACharacter
 {

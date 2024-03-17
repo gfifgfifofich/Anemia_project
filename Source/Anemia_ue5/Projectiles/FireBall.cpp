@@ -3,7 +3,6 @@
 
 #include "FireBall.h"
 
-
 // Sets default values
 AFireBall::AFireBall()
 {
