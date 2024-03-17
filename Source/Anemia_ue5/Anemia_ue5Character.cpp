@@ -13,8 +13,6 @@
 #include "Engine/World.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Components/ActorComponent.h"
-
-
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////

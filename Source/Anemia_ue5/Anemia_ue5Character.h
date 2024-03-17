@@ -8,13 +8,11 @@
 #include "VectorTypes.h"
 #include "Anemia_ue5Character.generated.h"
 
-
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
