@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "VectorTypes.h"
 #include "Anemia_ue5Character.generated.h"
+
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -44,17 +46,76 @@ class AAnemia_ue5Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+
+	
+
+
 public:
 	AAnemia_ue5Character();
 	
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	FVector CastOnPawnPosition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	FHitResult CastOnPawnHitResult;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	bool CastOnPawnSuccess;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	AActor* CastOnPawnActor;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	FVector CastOnGroundPosition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	FHitResult CastOnGroundHitResult;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	bool CastOnGroundSuccess;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
+	float MovementSpeed = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Controls)
+	float CameraSpeed = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Controls)
+	float TargetFOV = 90.0f;
+
+	float StartFOV = 90.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Controls)
+	float ZoomSpeed = 10.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects)
+	float CameraShakeAmount = 2.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects)
+	float CameraShakeFallOff = 5.0f;
+	
+	FVector2f CameraShakeDir  = FVector2f();
+
+	UFUNCTION( BlueprintCallable, Category = Input, DisplayName = "Shoot")
+	void Shoot(float CoolDown = 1.0f, FVector2f RecoilDir = FVector2f(), float RecoilRandomness = 0.0f);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnShootEvent();
+
 protected:
+	float ShootCD = 0.0f;
+
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
 			
 
 protected:
@@ -63,6 +124,8 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+	
+	virtual void Tick(float dt) override;
 
 public:
 	/** Returns CameraBoom subobject **/

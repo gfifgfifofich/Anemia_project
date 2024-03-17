@@ -10,11 +10,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Engine/World.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/ActorComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
-// AAnemia_ue5Character
+// AAnemia_projectCharacter
 
 AAnemia_ue5Character::AAnemia_ue5Character()
 {
@@ -42,14 +45,14 @@ AAnemia_ue5Character::AAnemia_ue5Character()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
+	StartFOV = FollowCamera->FieldOfView;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -58,7 +61,7 @@ void AAnemia_ue5Character::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -69,6 +72,29 @@ void AAnemia_ue5Character::BeginPlay()
 	}
 }
 
+void AAnemia_ue5Character::Tick(float dt)
+{
+	Super::Tick(dt);
+
+	ShootCD -=dt;
+
+
+
+	AddControllerYawInput(-CameraShakeDir.X) ;
+	AddControllerPitchInput(-CameraShakeDir.Y);
+
+	CameraShakeDir.X = FMath::RandRange(-1.0f,1.0f) * CameraShakeAmount;
+	CameraShakeDir.Y = FMath::RandRange(-1.0f,1.0f) * CameraShakeAmount;
+
+	AddControllerYawInput(CameraShakeDir.X) ;
+	AddControllerPitchInput(CameraShakeDir.Y);
+
+	CameraShakeAmount -=CameraShakeFallOff * dt;
+	if(CameraShakeAmount<0.0f)
+		CameraShakeAmount = 0.0f;
+	FollowCamera->FieldOfView = FollowCamera->FieldOfView + (TargetFOV - FollowCamera->FieldOfView)*dt * ZoomSpeed;
+
+} 
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -86,6 +112,7 @@ void AAnemia_ue5Character::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAnemia_ue5Character::Look);
+
 	}
 	else
 	{
@@ -111,8 +138,8 @@ void AAnemia_ue5Character::Move(const FInputActionValue& Value)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		AddMovementInput(ForwardDirection, MovementVector.Y*MovementSpeed);
+		AddMovementInput(RightDirection, MovementVector.X*MovementSpeed);
 	}
 }
 
@@ -124,7 +151,36 @@ void AAnemia_ue5Character::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput(LookAxisVector.X * CameraSpeed) ;
+		AddControllerPitchInput(LookAxisVector.Y * CameraSpeed);
+	}
+}
+
+void AAnemia_ue5Character::Shoot(float CoolDown, FVector2f RecoilDir, float RecoilRandomness)
+{
+	if(ShootCD<=0.0f)
+	{
+		//CameraShakeAmount = 1.5f;
+		ShootCD = CoolDown;
+		APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+
+		CastOnGroundSuccess = GetWorld()->LineTraceSingleByChannel(CastOnGroundHitResult, camManager->GetCameraLocation() , camManager->GetCameraLocation() +GetFollowCamera()->GetForwardVector()*5000.0f  , ECollisionChannel::ECC_Visibility);
+
+		if(CastOnGroundSuccess)
+			CastOnGroundPosition = CastOnGroundHitResult.Location;
+
+		CastOnPawnSuccess = GetWorld()->LineTraceSingleByChannel(CastOnPawnHitResult, camManager->GetCameraLocation() , camManager->GetCameraLocation() +GetFollowCamera()->GetForwardVector()*5000.0f  , ECollisionChannel::ECC_Pawn);
+
+		if(CastOnPawnSuccess)
+		{
+			CastOnPawnPosition = CastOnPawnHitResult.Location;
+			CastOnPawnActor = CastOnPawnHitResult.GetActor();
+		}
+
+
+		AddControllerYawInput(FMath::RandRange(-1.0f,1.0f) * RecoilRandomness + RecoilDir.X) ;
+		AddControllerPitchInput(FMath::RandRange(-1.0f,1.0f) * RecoilRandomness + RecoilDir.Y);
+
+		OnShootEvent();
 	}
 }
