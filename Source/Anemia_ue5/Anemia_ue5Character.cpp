@@ -16,7 +16,7 @@
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
-// AAnemia_projectCharacter
+// AAnemia_ue5Character
 
 AAnemia_ue5Character::AAnemia_ue5Character()
 {
