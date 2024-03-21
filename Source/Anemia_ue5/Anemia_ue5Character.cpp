@@ -21,8 +21,8 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 AAnemia_ue5Character::AAnemia_ue5Character()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+	GetCapsuleComponent()->InitCapsuleSize(30.0f, 96.0f);
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -40,6 +40,8 @@ AAnemia_ue5Character::AAnemia_ue5Character()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -87,7 +89,7 @@ void AAnemia_ue5Character::Tick(float dt)
 
 	AddControllerYawInput(CameraShakeDir.X) ;
 	AddControllerPitchInput(CameraShakeDir.Y);
-
+	
 	CameraShakeAmount -=CameraShakeFallOff * dt;
 	if(CameraShakeAmount<0.0f)
 		CameraShakeAmount = 0.0f;
@@ -165,9 +167,11 @@ void AAnemia_ue5Character::Shoot(float CoolDown, FVector2f RecoilDir, float Reco
 
 		CastOnGroundSuccess = GetWorld()->LineTraceSingleByChannel(CastOnGroundHitResult, camManager->GetCameraLocation() , camManager->GetCameraLocation() +GetFollowCamera()->GetForwardVector()*5000.0f  , ECollisionChannel::ECC_Visibility);
 
-		if(CastOnGroundSuccess)
+		if (CastOnGroundSuccess)
+		{
 			CastOnGroundPosition = CastOnGroundHitResult.Location;
-
+			CastOnGroundActor = CastOnGroundHitResult.GetActor();
+		}
 		CastOnPawnSuccess = GetWorld()->LineTraceSingleByChannel(CastOnPawnHitResult, camManager->GetCameraLocation() , camManager->GetCameraLocation() +GetFollowCamera()->GetForwardVector()*5000.0f  , ECollisionChannel::ECC_Pawn);
 
 		if(CastOnPawnSuccess)
@@ -182,4 +186,22 @@ void AAnemia_ue5Character::Shoot(float CoolDown, FVector2f RecoilDir, float Reco
 
 		OnShootEvent();
 	}
+}
+
+void AAnemia_ue5Character::Interact()
+{
+	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+
+	CastOnGroundSuccess = GetWorld()->LineTraceSingleByChannel(CastOnGroundHitResult, camManager->GetCameraLocation(), camManager->GetCameraLocation() + GetFollowCamera()->GetForwardVector() * 5000.0f, ECollisionChannel::ECC_Visibility);
+
+	if (CastOnGroundSuccess)
+	{
+		CastOnGroundPosition = CastOnGroundHitResult.Location;
+		CastOnGroundActor = CastOnGroundHitResult.GetActor();
+		OnInteractEvent();
+	}
+
+
+
+
 }

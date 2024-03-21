@@ -76,10 +76,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
 	bool CastOnGroundSuccess;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casts)
+	AActor* CastOnGroundActor;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
 	float MovementSpeed = 1.0f;
-	
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Controls)
 	float CameraSpeed = 1.0f;
 
@@ -99,11 +102,17 @@ public:
 	
 	FVector2f CameraShakeDir  = FVector2f();
 
-	UFUNCTION( BlueprintCallable, Category = Input, DisplayName = "Shoot")
+	UFUNCTION(BlueprintCallable, Category = Input, DisplayName = "Shoot")
 	void Shoot(float CoolDown = 1.0f, FVector2f RecoilDir = FVector2f(), float RecoilRandomness = 0.0f);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnShootEvent();
+
+	UFUNCTION(BlueprintCallable, Category = Input, DisplayName = "Input")
+	void Interact();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnInteractEvent();
 
 protected:
 	float ShootCD = 0.0f;
